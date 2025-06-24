@@ -1,0 +1,123 @@
+{
+	"info": {
+		"_postman_id": "b8e23f5a-1234-5678-9abc-def012345678",
+		"name": "Mexican Payroll System",
+		"description": "API collection for Mexican Payroll Processing System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Bulk Load",
+			"item": [
+				{
+					"name": "Download Template",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/bulk/template",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bulk",
+								"template"
+							]
+						},
+						"description": "Download CSV template for employee data import"
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Employee Data",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/path/to/your/employee_data.csv",
+									"description": "CSV file containing employee data"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/bulk/upload",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bulk",
+								"upload"
+							]
+						},
+						"description": "Upload and process employee data CSV file"
+					},
+					"response": []
+				},
+				{
+					"name": "Check Upload Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/bulk/status/:batch_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"bulk",
+								"status",
+								":batch_id"
+							],
+							"variable": [
+								{
+									"key": "batch_id",
+									"value": "your-batch-id",
+									"description": "ID of the bulk upload batch"
+								}
+							]
+						},
+						"description": "Check the status of a bulk upload operation"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for bulk loading employee data"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string",
+			"description": "Base URL for the API"
+		}
+	]
+}
