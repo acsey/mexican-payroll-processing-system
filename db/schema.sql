@@ -1,6 +1,44 @@
 -- Create extension for UUID generation
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Roles table
+CREATE TABLE roles (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert default roles
+INSERT INTO roles (name, description) VALUES
+    ('admin', 'Administrador del sistema con acceso completo'),
+    ('employee', 'Empleado con acceso a su información personal'),
+    ('accountant', 'Contador con acceso a información financiera'),
+    ('hr', 'Recursos Humanos con acceso a gestión de personal');
+
+-- Users table
+CREATE TABLE users (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role_id UUID REFERENCES roles(id),
+    is_active BOOLEAN DEFAULT true,
+    last_login TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User sessions table
+CREATE TABLE user_sessions (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES users(id),
+    token VARCHAR(255) NOT NULL UNIQUE,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Employees table
 CREATE TABLE employees (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
