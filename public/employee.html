@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal del Empleado - Sistema de Nómina</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <nav class="bg-white shadow">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <h1 class="text-xl font-bold text-gray-800">Portal del Empleado</h1>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span id="userInfo" class="text-sm text-gray-600 mr-4"></span>
+                        <button id="logoutBtn" class="text-sm font-medium text-gray-700 hover:text-gray-900">
+                            Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <!-- Información Personal -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">Información Personal</h2>
+                        <div class="space-y-4" id="personalInfo">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Número de Empleado</label>
+                                <p class="mt-1 text-sm text-gray-900" id="employeeNumber"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Nombre Completo</label>
+                                <p class="mt-1 text-sm text-gray-900" id="fullName"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">RFC</label>
+                                <p class="mt-1 text-sm text-gray-900" id="rfc"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">CURP</label>
+                                <p class="mt-1 text-sm text-gray-900" id="curp"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">NSS</label>
+                                <p class="mt-1 text-sm text-gray-900" id="nss"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Departamento</label>
+                                <p class="mt-1 text-sm text-gray-900" id="department"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Puesto</label>
+                                <p class="mt-1 text-sm text-gray-900" id="position"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recibos de Nómina -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">Recibos de Nómina</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Periodo
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Fecha de Pago
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Neto
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Acciones
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="payrollList" class="bg-white divide-y divide-gray-200">
+                                    <!-- Payroll receipts will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.role !== 'employee') {
+            window.location.href = '/login.html';
+        }
+
+        // Display user info
+        document.getElementById('userInfo').textContent = `${user.username} (${user.role})`;
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                localStorage.removeItem('user');
+                window.location.href = '/login.html';
+            } catch (error) {
+                console.error('Error logging out:', error);
+            }
+        });
+
+        // Load employee information
+        async function loadEmployeeInfo() {
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const employee = data.data.user;
+                    document.getElementById('employeeNumber').textContent = employee.employee_number;
+                    document.getElementById('fullName').textContent = `${employee.first_name} ${employee.last_name}`;
+                    document.getElementById('rfc').textContent = employee.rfc;
+                    document.getElementById('curp').textContent = employee.curp;
+                    document.getElementById('nss').textContent = employee.nss;
+                    document.getElementById('department').textContent = employee.department;
+                    document.getElementById('position').textContent = employee.position;
+                }
+            } catch (error) {
+                console.error('Error loading employee info:', error);
+            }
+        }
+
+        // Load employee information on page load
+        loadEmployeeInfo();
+    </script>
+</body>
+</html>
