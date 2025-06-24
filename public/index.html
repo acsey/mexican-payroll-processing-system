@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Nómina Mexicano</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <nav class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <h1 class="text-xl font-bold text-gray-800">Sistema de Nómina</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white shadow rounded-lg p-6">
+                    <div class="mb-8">
+                        <h2 class="text-lg font-medium text-gray-900">Carga Masiva de Empleados</h2>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Sube un archivo CSV con los datos de los empleados.
+                        </p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Archivo CSV
+                            </label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                <div class="space-y-1 text-center">
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                            <span>Seleccionar archivo</span>
+                                            <input id="file-upload" name="file-upload" type="file" class="sr-only" accept=".csv">
+                                        </label>
+                                        <p class="pl-1">o arrastrar y soltar</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">
+                                        CSV hasta 5MB
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <button type="button" id="download-template" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Descargar Plantilla
+                            </button>
+                            <button type="button" id="upload-file" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Subir Archivo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="result" class="mt-6 hidden">
+                        <div class="rounded-md bg-green-50 p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-green-800">
+                                        Carga exitosa
+                                    </h3>
+                                    <div class="mt-2 text-sm text-green-700">
+                                        <p id="result-message"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('download-template').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/bulk/template');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'plantilla_empleados.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Error al descargar la plantilla:', error);
+            }
+        });
+
+        document.getElementById('upload-file').addEventListener('click', async () => {
+            const fileInput = document.getElementById('file-upload');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Por favor selecciona un archivo CSV');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/api/bulk/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('result');
+                const resultMessage = document.getElementById('result-message');
+                
+                if (result.status === 'success') {
+                    resultMessage.textContent = `Se importaron ${result.data.successful_imports} empleados exitosamente.`;
+                    resultDiv.classList.remove('hidden');
+                    resultDiv.querySelector('.bg-green-50').classList.remove('bg-red-50');
+                    resultDiv.querySelector('.bg-green-50').classList.add('bg-green-50');
+                } else {
+                    resultMessage.textContent = 'Error al procesar el archivo.';
+                    resultDiv.classList.remove('hidden');
+                    resultDiv.querySelector('.bg-green-50').classList.remove('bg-green-50');
+                    resultDiv.querySelector('.bg-green-50').classList.add('bg-red-50');
+                }
+            } catch (error) {
+                console.error('Error al subir el archivo:', error);
+            }
+        });
+    </script>
+</body>
+</html>
