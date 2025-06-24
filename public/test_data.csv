@@ -1,0 +1,4 @@
+employee_number,first_name,last_name,rfc,curp,nss,birth_date,hire_date,department,position,base_salary
+TEST001,Ana,López García,LOGA900215ABC,LOGA900215MDFXXX01,98765432109,1990-02-15,2023-01-10,Ventas,Gerente de Ventas,35000.00
+TEST002,Miguel,Ramírez Torres,RATM880730DEF,RATM880730HDFXXX02,87654321098,1988-07-30,2023-02-15,IT,Desarrollador Senior,42000.00
+TEST003,Laura,Martínez Cruz,MACL950525GHI,MACL950525MDFXXX03,76543210987,1995-05-25,2023-03-20,RH,Analista de RH,28000.00
