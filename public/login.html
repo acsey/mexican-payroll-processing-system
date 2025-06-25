@@ -87,39 +87,36 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username, password }),
-                    credentials: 'include'
+                    body: JSON.stringify({ username, password })
                 });
 
                 const data = await response.json();
 
-                if (data.status === 'success') {
-                    // Store user data
-                    localStorage.setItem('user', JSON.stringify(data.data.user));
-                    
-                    // Redirect based on role
-                    switch (data.data.user.role) {
-                        case 'admin':
-                            window.location.href = '/admin.html';
-                            break;
-                        case 'employee':
-                            window.location.href = '/employee.html';
-                            break;
-                        case 'accountant':
-                            window.location.href = '/accountant.html';
-                            break;
-                        case 'hr':
-                            window.location.href = '/hr.html';
-                            break;
-                        default:
-                            window.location.href = '/';
+                    if (data.success) {
+                        // Redirect based on role
+                        switch (data.data.user.role_name) {
+                            case 'admin':
+                                window.location.href = '/admin.html';
+                                break;
+                            case 'employee':
+                                window.location.href = '/employee.html';
+                                break;
+                            case 'accountant':
+                                window.location.href = '/accountant.html';
+                                break;
+                            case 'hr':
+                                window.location.href = '/hr.html';
+                                break;
+                            default:
+                                window.location.href = '/';
+                        }
+                    } else {
+                        errorText.textContent = data.message || 'Error al iniciar sesión';
+                        errorDiv.classList.remove('hidden');
                     }
-                } else {
-                    errorText.textContent = data.message;
-                    errorDiv.classList.remove('hidden');
-                }
             } catch (error) {
-                errorText.textContent = 'Error al iniciar sesión';
+                console.error('Error:', error);
+                errorText.textContent = 'Error al conectar con el servidor';
                 errorDiv.classList.remove('hidden');
             }
         });
