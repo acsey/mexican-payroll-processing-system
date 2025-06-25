@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exportación de Nómina - Sistema de Nómina</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-gray-900">Exportación de Nómina</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userInfo" class="text-sm text-gray-600"></span>
+                    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Navigation -->
+        <nav class="mb-8">
+            <div class="flex space-x-4">
+                <a href="/admin.html" class="text-blue-600 hover:text-blue-800 font-medium">
+                    <i class="fas fa-arrow-left mr-2"></i>Volver al Panel
+                </a>
+            </div>
+        </nav>
+
+        <!-- Períodos de Nómina -->
+        <div class="bg-white rounded-lg shadow mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Períodos de Nómina Disponibles</h2>
+                <p class="text-sm text-gray-600 mt-1">Selecciona un período para exportar archivos de nómina</p>
+            </div>
+            <div class="p-6">
+                <div id="periodsContainer" class="space-y-4">
+                    <!-- Los períodos se cargarán aquí -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista Previa de Nómina -->
+        <div id="previewSection" class="bg-white rounded-lg shadow mb-8 hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Vista Previa de Nómina</h2>
+                <div id="periodInfo" class="text-sm text-gray-600 mt-1"></div>
+            </div>
+            <div class="p-6">
+                <!-- Resumen -->
+                <div id="summaryContainer" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <!-- El resumen se cargará aquí -->
+                </div>
+
+                <!-- Opciones de Exportación -->
+                <div class="border-t pt-6">
+                    <h3 class="text-md font-semibold text-gray-900 mb-4">Opciones de Exportación</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Dispersión Bancaria -->
+                        <div class="border rounded-lg p-4 hover:bg-gray-50">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-university text-blue-600 text-xl mr-3"></i>
+                                <h4 class="font-medium text-gray-900">Dispersión Bancaria</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">Archivo CSV para transferencias bancarias</p>
+                            <button onclick="exportDispersion()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-download mr-2"></i>Descargar CSV
+                            </button>
+                        </div>
+
+                        <!-- PAC (CFDI) -->
+                        <div class="border rounded-lg p-4 hover:bg-gray-50">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-file-code text-green-600 text-xl mr-3"></i>
+                                <h4 class="font-medium text-gray-900">PAC (CFDI)</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">Archivo XML para timbrado fiscal</p>
+                            <button onclick="exportPAC()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-download mr-2"></i>Descargar XML
+                            </button>
+                        </div>
+
+                        <!-- Resumen de Nómina -->
+                        <div class="border rounded-lg p-4 hover:bg-gray-50">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-chart-bar text-purple-600 text-xl mr-3"></i>
+                                <h4 class="font-medium text-gray-900">Resumen Detallado</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">Reporte completo en formato CSV</p>
+                            <button onclick="exportSummary()" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-download mr-2"></i>Descargar CSV
+                            </button>
+                        </div>
+
+                        <!-- Recibos de Nómina -->
+                        <div class="border rounded-lg p-4 hover:bg-gray-50">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-receipt text-orange-600 text-xl mr-3"></i>
+                                <h4 class="font-medium text-gray-900">Recibos de Nómina</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">Datos para generar recibos individuales</p>
+                            <button onclick="generateReceipts()" class="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-file-alt mr-2"></i>Generar Recibos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Empleados -->
+                <div class="border-t pt-6">
+                    <h3 class="text-md font-semibold text-gray-900 mb-4">Detalle de Empleados</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empleado</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RFC</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departamento</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Días</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percepciones</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deducciones</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Neto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeesTable" class="bg-white divide-y divide-gray-200">
+                                <!-- Los empleados se cargarán aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <div class="flex items-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                <span class="text-gray-700">Procesando...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPeriodId = null;
+        let currentPeriodData = null;
+
+        // Verificar autenticación al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadPayrollPeriods();
+        });
+
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Obtener información del usuario
+            fetch('/api/auth/profile', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('userInfo').textContent = `${data.user.username} (${data.user.role})`;
+                } else {
+                    logout();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                logout();
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        }
+
+        function showLoading() {
+            document.getElementById('loadingSpinner').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingSpinner').classList.add('hidden');
+        }
+
+        function loadPayrollPeriods() {
+            showLoading();
+            const token = localStorage.getItem('token');
+
+            fetch('/api/payroll-export/periods', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    displayPayrollPeriods(data.data);
+                } else {
+                    showError('Error al cargar períodos de nómina: ' + data.message);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                showError('Error al cargar períodos de nómina');
+            });
+        }
+
+        function displayPayrollPeriods(periods) {
+            const container = document.getElementById('periodsContainer');
+            
+            if (periods.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-calendar-times text-gray-400 text-4xl mb-4"></i>
+                        <p class="text-gray-600">No hay períodos de nómina disponibles</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = periods.map(period => `
+                <div class="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer" onclick="selectPeriod('${period.id}')">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Período ${period.period_number}</h3>
+                            <p class="text-sm text-gray-600">${formatDate(period.start_date)} - ${formatDate(period.end_date)}</p>
+                            <p class="text-sm text-gray-500">Fecha de pago: ${formatDate(period.payment_date)}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-gray-900">${period.employee_count || 0} empleados</p>
+                            <p class="text-sm text-gray-600">$${formatCurrency(period.total_net_amount || 0)}</p>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(period.status)}">
+                                ${period.status}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectPeriod(periodId) {
+            currentPeriodId = periodId;
+            loadPayrollPreview(periodId);
+        }
+
+        function loadPayrollPreview(periodId) {
+            showLoading();
+            const token = localStorage.getItem('token');
+
+            fetch(`/api/payroll-export/preview/${periodId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    currentPeriodData = data.data;
+                    displayPayrollPreview(data.data);
+                } else {
+                    showError('Error al cargar vista previa: ' + data.message);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                showError('Error al cargar vista previa');
+            });
+        }
+
+        function displayPayrollPreview(data) {
+            const previewSection = document.getElementById('previewSection');
+            const periodInfo = document.getElementById('periodInfo');
+            const summaryContainer = document.getElementById('summaryContainer');
+            const employeesTable = document.getElementById('employeesTable');
+
+            // Mostrar información del período
+            if (data.period) {
+                periodInfo.innerHTML = `Período ${data.period.periodNumber}: ${formatDate(data.period.startDate)} - ${formatDate(data.period.endDate)} | Pago: ${formatDate(data.period.paymentDate)}`;
+            }
+
+            // Mostrar resumen
+            summaryContainer.innerHTML = `
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-blue-900">${data.summary.totalEmployees}</div>
+                    <div class="text-sm text-blue-600">Empleados</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-green-900">$${formatCurrency(data.summary.totalGrossSalary)}</div>
+                    <div class="text-sm text-green-600">Total Percepciones</div>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-red-900">$${formatCurrency(data.summary.totalDeductions)}</div>
+                    <div class="text-sm text-red-600">Total Deducciones</div>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-purple-900">$${formatCurrency(data.summary.totalNetSalary)}</div>
+                    <div class="text-sm text-purple-600">Total Neto</div>
+                </div>
+            `;
+
+            // Mostrar tabla de empleados
+            employeesTable.innerHTML = data.employees.map(employee => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${employee.first_name} ${employee.last_name}</div>
+                        <div class="text-sm text-gray-500">#${employee.employee_number}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${employee.rfc}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${employee.department || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${employee.days_worked}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${formatCurrency(employee.gross_salary)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${formatCurrency(employee.total_deductions)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">$${formatCurrency(employee.net_salary)}</td>
+                </tr>
+            `).join('');
+
+            previewSection.classList.remove('hidden');
+        }
+
+        function exportDispersion() {
+            if (!currentPeriodId) return;
+            downloadFile(`/api/payroll-export/dispersion/${currentPeriodId}`);
+        }
+
+        function exportPAC() {
+            if (!currentPeriodId) return;
+            downloadFile(`/api/payroll-export/pac/${currentPeriodId}`);
+        }
+
+        function exportSummary() {
+            if (!currentPeriodId) return;
+            downloadFile(`/api/payroll-export/summary/${currentPeriodId}`);
+        }
+
+        function generateReceipts() {
+            if (!currentPeriodId) return;
+            
+            showLoading();
+            const token = localStorage.getItem('token');
+
+            fetch(`/api/payroll-export/receipts/${currentPeriodId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    // Crear y descargar archivo JSON
+                    const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = data.filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showSuccess('Recibos de nómina generados exitosamente');
+                } else {
+                    showError('Error al generar recibos: ' + data.message);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                showError('Error al generar recibos');
+            });
+        }
+
+        function downloadFile(url) {
+            showLoading();
+            const token = localStorage.getItem('token');
+
+            fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                hideLoading();
+                if (response.ok) {
+                    return response.blob().then(blob => {
+                        const contentDisposition = response.headers.get('Content-Disposition');
+                        const filename = contentDisposition ? 
+                            contentDisposition.split('filename=')[1].replace(/"/g, '') : 
+                            'export.csv';
+                        
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        
+                        showSuccess('Archivo descargado exitosamente');
+                    });
+                } else {
+                    throw new Error('Error en la descarga');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                showError('Error al descargar archivo');
+            });
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-MX');
+        }
+
+        function formatCurrency(amount) {
+            if (!amount) return '0.00';
+            return parseFloat(amount).toLocaleString('es-MX', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function getStatusColor(status) {
+            switch (status) {
+                case 'DRAFT': return 'bg-yellow-100 text-yellow-800';
+                case 'PROCESSED': return 'bg-green-100 text-green-800';
+                case 'PAID': return 'bg-blue-100 text-blue-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function showSuccess(message) {
+            // Implementar notificación de éxito
+            alert('Éxito: ' + message);
+        }
+
+        function showError(message) {
+            // Implementar notificación de error
+            alert('Error: ' + message);
+        }
+    </script>
+</body>
+</html>
