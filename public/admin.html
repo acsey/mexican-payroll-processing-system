@@ -27,13 +27,81 @@
                         <button id="logoutBtn" class="text-sm font-medium text-gray-700 hover:text-gray-900">
                             Cerrar Sesión
                         </button>
-                    </div>
                 </div>
             </div>
         </nav>
 
         <div class="py-6">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Navigation Cards -->
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+                    <!-- Exportación de Nómina -->
+                    <div class="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="window.location.href='/payroll-export.html'">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Exportación de Nómina</dt>
+                                    <dd class="text-lg font-medium text-gray-900">PAC & Dispersión</dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-sm text-gray-600">Exportar archivos para PAC, dispersión bancaria y recibos de nómina</p>
+                        </div>
+                    </div>
+
+                    <!-- Carga Masiva -->
+                    <div class="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="window.location.href='/bulk-load.html'">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Carga Masiva</dt>
+                                    <dd class="text-lg font-medium text-gray-900">Empleados</dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-sm text-gray-600">Cargar datos de empleados desde archivos CSV</p>
+                        </div>
+                    </div>
+
+                    <!-- Gestión de Usuarios -->
+                    <div class="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Gestión de Usuarios</dt>
+                                    <dd class="text-lg font-medium text-gray-900">Sistema</dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-sm text-gray-600">Administrar usuarios y roles del sistema</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <!-- Registro de Usuario -->
                     <div class="bg-white shadow rounded-lg p-6">
