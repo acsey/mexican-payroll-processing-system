@@ -25,8 +25,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', authRoutes);
 
 // Protected routes
-app.use('/api/bulk', authMiddleware, bulkLoadRoutes);
-app.use('/api/payroll-export', payrollExportRoutes);
+app.use('/api/bulk-load', authMiddleware, bulkLoadRoutes);
+app.use('/api/payroll-export', authMiddleware, payrollExportRoutes);
 
 // Serve index.html for the root route
 app.get('/', (req, res) => {
@@ -35,7 +35,13 @@ app.get('/', (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'OK', timestamp: new Date() });
+    res.status(200).json({ 
+        status: 'success',
+        success: true,
+        data: {
+            timestamp: new Date()
+        }
+    });
 });
 
 // Handle 404
@@ -45,6 +51,7 @@ app.use((req, res) => {
     } else {
         res.status(404).json({
             status: 'error',
+            success: false,
             message: 'Route not found'
         });
     }
@@ -55,6 +62,7 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({
         status: 'error',
+        success: false,
         message: 'Something went wrong!',
         error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
