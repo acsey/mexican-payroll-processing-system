@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const { authMiddleware } = require('./middleware/authMiddleware');
 const bulkLoadRoutes = require('./routes/bulkLoadRoutes');
 const authRoutes = require('./routes/authRoutes');
+const payrollExportRoutes = require('./routes/payrollExportRoutes');
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use('/api/auth', authRoutes);
 
 // Protected routes
 app.use('/api/bulk', authMiddleware, bulkLoadRoutes);
+app.use('/api/payroll-export', payrollExportRoutes);
 
 // Serve index.html for the root route
 app.get('/', (req, res) => {
