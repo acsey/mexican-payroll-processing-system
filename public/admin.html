@@ -168,51 +168,126 @@
     </div>
 
     <script>
-        // Check authentication
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user || user.role !== 'admin') {
-            window.location.href = '/login.html';
-        }
-
-        // Display user info
-        document.getElementById('userInfo').textContent = `${user.username} (${user.role})`;
-
-        // Logout handler
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            try {
-                await fetch('/api/auth/logout', {
-                    method: 'POST',
-                    credentials: 'include'
-                });
-                localStorage.removeItem('user');
-                window.location.href = '/login.html';
-            } catch (error) {
-                console.error('Error logging out:', error);
-            }
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadRoles();
+            loadUsers();
         });
 
-        // Load roles for select
-        async function loadRoles() {
-            try {
-                const response = await fetch('/api/auth/roles', {
-                    credentials: 'include'
-                });
-                const data = await response.json();
-                
-                const select = document.querySelector('select[name="roleId"]');
-                data.data.roles.forEach(role => {
-                    const option = document.createElement('option');
-                    option.value = role.id;
-                    option.textContent = role.name;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error loading roles:', error);
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
             }
+
+            // Get user info
+            fetch('/api/auth/profile', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('userInfo').textContent = `${data.user.username} (${data.user.role_name})`;
+                    if (data.user.role_name !== 'admin') {
+                        window.location.href = '/login.html';
+                    }
+                } else {
+                    logout();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                logout();
+            });
+        }
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+
+        function logout() {
+            const token = localStorage.getItem('token');
+            fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(() => {
+                localStorage.removeItem('token');
+                window.location.href = '/login.html';
+            })
+            .catch(error => {
+                console.error('Error logging out:', error);
+                localStorage.removeItem('token');
+                window.location.href = '/login.html';
+            });
+        }
+
+        // Load roles for select
+        function loadRoles() {
+            const token = localStorage.getItem('token');
+            fetch('/api/auth/roles', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const select = document.querySelector('select[name="roleId"]');
+                    select.innerHTML = ''; // Clear existing options
+                    data.data.roles.forEach(role => {
+                        const option = document.createElement('option');
+                        option.value = role.id;
+                        option.textContent = role.name;
+                        select.appendChild(option);
+                    });
+                }
+            })
+            .catch(error => console.error('Error loading roles:', error));
+        }
+
+        // Load users list
+        function loadUsers() {
+            const token = localStorage.getItem('token');
+            fetch('/api/auth/users', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const usersList = document.getElementById('usersList');
+                    usersList.innerHTML = data.data.users.map(user => `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                ${user.username}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                ${user.email}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                ${user.role}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                    ${user.is_active ? 'Activo' : 'Inactivo'}
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            })
+            .catch(error => console.error('Error loading users:', error));
         }
 
         // Register form handler
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const formData = new FormData(e.target);
@@ -223,32 +298,30 @@
                 roleId: formData.get('roleId')
             };
 
-            try {
-                const response = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(userData),
-                    credentials: 'include'
-                });
-
-                const data = await response.json();
-                if (data.status === 'success') {
+            const token = localStorage.getItem('token');
+            fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
                     alert('Usuario registrado exitosamente');
                     e.target.reset();
                     loadUsers();
                 } else {
-                    alert(data.message);
+                    alert(data.message || 'Error al registrar usuario');
                 }
-            } catch (error) {
+            })
+            .catch(error => {
                 console.error('Error registering user:', error);
                 alert('Error al registrar usuario');
-            }
+            });
         });
-
-        // Load roles on page load
-        loadRoles();
     </script>
 </body>
 </html>
