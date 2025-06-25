@@ -14,9 +14,13 @@ class AuthService {
         return bcrypt.compare(password, hashedPassword);
     }
 
-    generateToken(userId, role) {
+    generateToken(userId, role, roleName) {
         return jwt.sign(
-            { userId, role },
+            { 
+                userId, 
+                role,
+                role_name: roleName 
+            },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
@@ -58,7 +62,7 @@ class AuthService {
 
     async login(username, password) {
         const result = await pool.query(
-            `SELECT u.id, u.username, u.password_hash, u.email, r.name as role
+            `SELECT u.id, u.username, u.password_hash, u.email, r.id as role_id, r.name as role_name
             FROM users u
             JOIN roles r ON u.role_id = r.id
             WHERE u.username = $1 AND u.is_active = true`,
@@ -82,7 +86,7 @@ class AuthService {
             [user.id]
         );
 
-        const token = this.generateToken(user.id, user.role);
+        const token = this.generateToken(user.id, user.role_id, user.role_name);
 
         // Store session
         await pool.query(
@@ -96,7 +100,8 @@ class AuthService {
                 id: user.id,
                 username: user.username,
                 email: user.email,
-                role: user.role
+                role_id: user.role_id,
+                role_name: user.role_name
             },
             token
         };
@@ -130,7 +135,7 @@ class AuthService {
 
     async getUserById(userId) {
         const result = await pool.query(
-            `SELECT u.id, u.username, u.email, r.name as role
+            `SELECT u.id, u.username, u.email, r.id as role_id, r.name as role_name
             FROM users u
             JOIN roles r ON u.role_id = r.id
             WHERE u.id = $1`,
