@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carga Masiva - Sistema de Nómina</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-xl font-bold">Sistema de Nómina</h1>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <a href="admin.html" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                    <a href="bulk-load.html" class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium">Carga Masiva</a>
+                    <a href="payroll-export.html" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Exportar Nómina</a>
+                    <button onclick="logout()" class="ml-4 text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Cerrar Sesión</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-2xl font-bold mb-6">Carga Masiva de Empleados</h2>
+                
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold mb-4">Descargar Plantilla</h3>
+                    <button onclick="downloadTemplate()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        Descargar Plantilla CSV
+                    </button>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold mb-4">Cargar Archivo</h3>
+                    <div class="flex items-center space-x-4">
+                        <input type="file" id="csvFile" accept=".csv" class="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-md file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-blue-50 file:text-blue-700
+                            hover:file:bg-blue-100
+                        "/>
+                        <button onclick="uploadFile()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            Cargar Archivo
+                        </button>
+                    </div>
+                </div>
+
+                <div id="uploadStatus" class="hidden">
+                    <h3 class="text-lg font-semibold mb-4">Estado de la Carga</h3>
+                    <div class="bg-gray-100 p-4 rounded">
+                        <p id="statusMessage" class="text-gray-700"></p>
+                        <div id="progressBar" class="mt-2 h-2 bg-gray-200 rounded">
+                            <div class="h-2 bg-blue-600 rounded" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+            }
+        });
+
+        async function downloadTemplate() {
+            try {
+                const response = await fetch('/api/bulk-load/template', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Error al descargar la plantilla');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'plantilla_empleados.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                alert('Error al descargar la plantilla: ' + error.message);
+            }
+        }
+
+        async function uploadFile() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Por favor seleccione un archivo CSV');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/api/bulk-load/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar el archivo');
+                }
+
+                const result = await response.json();
+                showUploadStatus(result.batchId);
+            } catch (error) {
+                alert('Error al cargar el archivo: ' + error.message);
+            }
+        }
+
+        async function showUploadStatus(batchId) {
+            const statusDiv = document.getElementById('uploadStatus');
+            const statusMessage = document.getElementById('statusMessage');
+            const progressBar = document.getElementById('progressBar').firstElementChild;
+            
+            statusDiv.classList.remove('hidden');
+            
+            const checkStatus = async () => {
+                try {
+                    const response = await fetch(`/api/bulk-load/status/${batchId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Error al verificar el estado');
+                    }
+
+                    const status = await response.json();
+                    statusMessage.textContent = status.message;
+                    progressBar.style.width = `${status.progress}%`;
+
+                    if (status.status !== 'completed' && status.status !== 'error') {
+                        setTimeout(checkStatus, 1000);
+                    }
+                } catch (error) {
+                    statusMessage.textContent = 'Error al verificar el estado: ' + error.message;
+                }
+            };
+
+            checkStatus();
+        }
+
+        async function logout() {
+            try {
+                const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cerrar sesión');
+                }
+
+                localStorage.removeItem('token');
+                window.location.href = '/login.html';
+            } catch (error) {
+                alert('Error al cerrar sesión: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
