@@ -9,6 +9,7 @@ class AuthController {
             if (!username || !email || !password || !roleId) {
                 return res.status(400).json({
                     status: 'error',
+                    success: false,
                     message: 'Todos los campos son requeridos'
                 });
             }
@@ -22,6 +23,7 @@ class AuthController {
 
             res.status(201).json({
                 status: 'success',
+                success: true,
                 data: {
                     user: {
                         id: user.id,
@@ -34,6 +36,7 @@ class AuthController {
         } catch (error) {
             res.status(400).json({
                 status: 'error',
+                success: false,
                 message: error.message
             });
         }
@@ -46,6 +49,7 @@ class AuthController {
             if (!username || !password) {
                 return res.status(400).json({
                     status: 'error',
+                    success: false,
                     message: 'Usuario y contraseña son requeridos'
                 });
             }
@@ -61,6 +65,7 @@ class AuthController {
 
             res.json({
                 status: 'success',
+                success: true,
                 data: {
                     user: result.user,
                     token: result.token
@@ -69,6 +74,7 @@ class AuthController {
         } catch (error) {
             res.status(401).json({
                 status: 'error',
+                success: false,
                 message: error.message
             });
         }
@@ -86,11 +92,13 @@ class AuthController {
             
             res.json({
                 status: 'success',
+                success: true,
                 message: 'Sesión cerrada exitosamente'
             });
         } catch (error) {
             res.status(500).json({
                 status: 'error',
+                success: false,
                 message: error.message
             });
         }
@@ -102,6 +110,7 @@ class AuthController {
             
             res.json({
                 status: 'success',
+                success: true,
                 data: {
                     user
                 }
@@ -109,6 +118,7 @@ class AuthController {
         } catch (error) {
             res.status(404).json({
                 status: 'error',
+                success: false,
                 message: error.message
             });
         }
@@ -120,6 +130,7 @@ class AuthController {
             
             res.json({
                 status: 'success',
+                success: true,
                 data: {
                     roles: result.rows
                 }
@@ -127,7 +138,34 @@ class AuthController {
         } catch (error) {
             res.status(500).json({
                 status: 'error',
+                success: false,
                 message: 'Error al obtener roles'
+            });
+        }
+    }
+
+    async getUsers(req, res) {
+        try {
+            const result = await pool.query(`
+                SELECT u.id, u.username, u.email, u.is_active, r.name as role
+                FROM users u
+                JOIN roles r ON u.role_id = r.id
+                ORDER BY u.username
+            `);
+            
+            res.json({
+                status: 'success',
+                success: true,
+                data: {
+                    users: result.rows
+                }
+            });
+        } catch (error) {
+            res.status(500).json({
+                status: 'error',
+                success: false,
+                message: 'Error al obtener usuarios',
+                error: error.message
             });
         }
     }
