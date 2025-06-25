@@ -7,6 +7,7 @@ const authMiddleware = async (req, res, next) => {
         if (!token) {
             return res.status(401).json({
                 status: 'error',
+                success: false,
                 message: 'No se proporcionó token de autenticación'
             });
         }
@@ -17,7 +18,9 @@ const authMiddleware = async (req, res, next) => {
     } catch (error) {
         res.status(401).json({
             status: 'error',
-            message: 'Token inválido o sesión expirada'
+            success: false,
+            message: 'Token inválido o sesión expirada',
+            error: error.message
         });
     }
 };
@@ -27,13 +30,15 @@ const roleMiddleware = (...allowedRoles) => {
         if (!req.user) {
             return res.status(401).json({
                 status: 'error',
+                success: false,
                 message: 'Usuario no autenticado'
             });
         }
 
-        if (!allowedRoles.includes(req.user.role)) {
+        if (!allowedRoles.includes(req.user.role_name)) {
             return res.status(403).json({
                 status: 'error',
+                success: false,
                 message: 'No tiene permisos para acceder a este recurso'
             });
         }
@@ -43,6 +48,7 @@ const roleMiddleware = (...allowedRoles) => {
 };
 
 // Middleware específicos por rol
+// Role-specific middleware
 const isAdmin = roleMiddleware('admin');
 const isEmployee = roleMiddleware('employee');
 const isAccountant = roleMiddleware('accountant');
