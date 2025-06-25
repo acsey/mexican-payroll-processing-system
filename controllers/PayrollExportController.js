@@ -1,4 +1,5 @@
 const PayrollExportService = require('../services/PayrollExportService');
+const { request } = require('express');
 
 class PayrollExportController {
     
@@ -7,12 +8,14 @@ class PayrollExportController {
         try {
             const periods = await PayrollExportService.getAvailablePayrollPeriods();
             res.json({
+                status: 'success',
                 success: true,
                 data: periods
             });
         } catch (error) {
             console.error('Error obteniendo períodos de nómina:', error);
             res.status(500).json({
+                status: 'error',
                 success: false,
                 message: 'Error al obtener períodos de nómina',
                 error: error.message
@@ -27,6 +30,7 @@ class PayrollExportController {
             
             if (!periodId) {
                 return res.status(400).json({
+                    status: 'error',
                     success: false,
                     message: 'ID del período es requerido'
                 });
@@ -41,6 +45,7 @@ class PayrollExportController {
         } catch (error) {
             console.error('Error exportando para dispersión:', error);
             res.status(500).json({
+                status: 'error',
                 success: false,
                 message: 'Error al exportar archivo de dispersión',
                 error: error.message
@@ -55,6 +60,7 @@ class PayrollExportController {
             
             if (!periodId) {
                 return res.status(400).json({
+                    status: 'error',
                     success: false,
                     message: 'ID del período es requerido'
                 });
@@ -69,6 +75,7 @@ class PayrollExportController {
         } catch (error) {
             console.error('Error exportando para PAC:', error);
             res.status(500).json({
+                status: 'error',
                 success: false,
                 message: 'Error al exportar archivo para PAC',
                 error: error.message
@@ -83,6 +90,7 @@ class PayrollExportController {
             
             if (!periodId) {
                 return res.status(400).json({
+                    status: 'error',
                     success: false,
                     message: 'ID del período es requerido'
                 });
@@ -97,6 +105,7 @@ class PayrollExportController {
         } catch (error) {
             console.error('Error exportando resumen:', error);
             res.status(500).json({
+                status: 'error',
                 success: false,
                 message: 'Error al exportar resumen de nómina',
                 error: error.message
@@ -111,6 +120,7 @@ class PayrollExportController {
             
             if (!periodId) {
                 return res.status(400).json({
+                    status: 'error',
                     success: false,
                     message: 'ID del período es requerido'
                 });
@@ -119,14 +129,18 @@ class PayrollExportController {
             const receiptsData = await PayrollExportService.generatePayrollReceipts(periodId);
             
             res.json({
+                status: 'success',
                 success: true,
-                data: receiptsData.receipts,
-                filename: receiptsData.filename
+                data: {
+                    receipts: receiptsData.receipts,
+                    filename: receiptsData.filename
+                }
             });
             
         } catch (error) {
             console.error('Error generando recibos:', error);
             res.status(500).json({
+                status: 'error',
                 success: false,
                 message: 'Error al generar recibos de nómina',
                 error: error.message
@@ -141,6 +155,7 @@ class PayrollExportController {
             
             if (!periodId) {
                 return res.status(400).json({
+                    status: 'error',
                     success: false,
                     message: 'ID del período es requerido'
                 });
@@ -163,6 +178,7 @@ class PayrollExportController {
             });
 
             res.json({
+                status: 'success',
                 success: true,
                 data: {
                     employees: payrollData,
@@ -179,6 +195,7 @@ class PayrollExportController {
         } catch (error) {
             console.error('Error obteniendo vista previa:', error);
             res.status(500).json({
+                status: 'error',
                 success: false,
                 message: 'Error al obtener vista previa de nómina',
                 error: error.message
